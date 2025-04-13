@@ -85,7 +85,7 @@
     var socket;
     $(document).ready(function(){
         // Connect to Socket.IO
-        socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+        socket = io.connect('https://' + document.domain + ':' + location.port + '/chat');
         
         // When connected, join the room
         socket.on('connect', function() {
