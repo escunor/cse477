@@ -1,0 +1,153 @@
+{% extends 'shared/layout.html' %}
+
+{% block extracss %}
+<style> 
+/* Chat container styling */
+#chat {
+  width: 100%;
+  height: 350px;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f8f8f8;
+  color: black; /* Ensures text is visible on light background */
+  font-size: 16px;
+  resize: none;
+  overflow-y: auto;
+}
+
+/* Owner messages (blue, right-aligned) */
+.message-owner {
+  color: #0066cc;
+  text-align: right;
+  margin: 8px 0;
+  padding: 5px;
+  word-break: break-word;
+}
+
+/* Guest messages (grey, left-aligned) */
+.message-guest {
+  color: #666666;
+  text-align: left;
+  margin: 8px 0;
+  padding: 5px;
+  word-break: break-word;
+}
+
+/* Input and button styling */
+#message-input {
+  width: 70%;
+  padding: 10px;
+  margin-top: 10px;
+  color: black; /* Ensures input text is visible */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#send-btn, #leave-btn {
+  padding: 10px 15px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#send-btn {
+  background-color: #4CAF50;
+  color: white;
+  margin-left: 5px;
+}
+
+#leave-btn {
+  background-color: #f44336;
+  color: white;
+  margin-left: 10px;
+}
+
+/* Responsive layout */
+@media (max-width: 600px) {
+  #message-input {
+    width: 100%;
+  }
+  #send-btn, #leave-btn {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+</style>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.socket.io/3.1.1/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket;
+    $(document).ready(function(){
+        // Connect to Socket.IO
+        socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+        
+        // When connected, join the room
+        socket.on('connect', function() {
+            console.log('Connected to chat server');
+            socket.emit('joined', {});
+        });
+
+        // Handle status messages (join/leave notifications)
+        socket.on('status', function(data) {
+            addMessage(data.msg, 'message-owner');
+        });
+        
+        // Handle regular chat messages
+        socket.on('message', function(data) {
+            const className = data.isOwner ? 'message-owner' : 'message-guest';
+            addMessage(data.msg, className);
+        });
+        
+        // Send message when Enter is pressed or Send button clicked
+        $('#message-input').keypress(function(e) {
+            if (e.which == 13) { // Enter key
+                sendMessage();
+            }
+        });
+        
+        $('#send-btn').click(sendMessage);
+        
+        // Leave room when leave button is clicked
+        $('#leave-btn').click(function() {
+            socket.emit('left', {});
+            setTimeout(function() {
+                window.location.href = "/home";
+            }, 300);
+        });
+        
+        // Function to send messages
+        function sendMessage() {
+            const msg = $('#message-input').val().trim();
+            if (msg !== '') {
+                socket.emit('text', {msg: msg});
+                $('#message-input').val('').focus();
+            }
+        }
+        
+        // Function to add messages to chat
+        function addMessage(msg, className) {
+            const tag = document.createElement("p");
+            tag.className = className;
+            tag.textContent = msg;
+            document.getElementById("chat").appendChild(tag);
+            $('#chat').scrollTop($('#chat')[0].scrollHeight);
+        }
+    });
+</script>
+{% endblock %}
+
+{% block maincontent %}
+<h2>Chat Room</h2>
+<div id='chat'></div>
+<div class="chat-controls">
+    <input type="text" id="message-input" placeholder="Type your message here..." autocomplete="off">
+    <button id="send-btn">Send</button>
+    <button id="leave-btn">Leave Chat</button>
+</div>
+{% endblock %}

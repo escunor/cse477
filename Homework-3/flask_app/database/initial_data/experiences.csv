@@ -1,0 +1,4 @@
+experience_id,position_id,name,description,hyperlink,start_date,end_date
+1,1,CSE 335,"Learned OOP.","cse335.egr.msu.edu",2024-8-31,NULL
+2,1,CSE 331,"Learned Data Structures and Algorithms","NULL",2024-8-31,NULL
+3,2,CSE 325,"Learned about computer systems","NULL",2024-8-31,NULL

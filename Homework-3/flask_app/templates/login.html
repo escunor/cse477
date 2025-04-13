@@ -1,0 +1,74 @@
+{% extends 'shared/layout.html' %}
+
+{% block extrajs %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock %}
+
+
+{% block maincontent %}
+<br><br>
+<div class="login-form">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="checkCredentials()">Login</button>
+    <p id="error-message" style="color: red;"></p>
+</div>
+
+<script>
+let attempts = 0;
+
+function checkCredentials() {
+    const email = $('#email').val();
+    const password = $('#password').val();
+    
+    if (!email || !password) {
+        $('#error-message').text('Please enter both email and password');
+        return;
+    }
+
+    // Package data
+    const data = {
+        'email': email,
+        'password': password
+    };
+
+    // Send to server
+    $.ajax({
+        url: "/processlogin",
+        data: data,
+        type: "POST",
+        success: function(response) {
+            response = JSON.parse(response);
+            if (response.success) {
+                window.location.href = "/home";
+            } else {
+                attempts++;
+                $('#error-message').text(
+                    `Login failed (attempt ${attempts}): ${response.message}`
+                );
+            }
+        }
+    });
+}
+</script>
+
+<style>
+.login-form {
+    max-width: 300px;
+    margin: 0 auto;
+    text-align: center;
+}
+.login-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+.login-form button {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
